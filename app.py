@@ -9,6 +9,7 @@ mysql = MySQL()
 db = yaml.safe_load(open('db.yaml'))
 
 print(db)
+#sang
 
 app.config['MYSQL_DATABASE_HOST'] = db['mysql_host']
 app.config['MYSQL_DATABASE_USER'] = db['mysql_user']
