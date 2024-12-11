@@ -168,24 +168,40 @@ def profile():
 @app.route("/newsletter", methods=["GET", "POST"])
 def newsletter():
     msg = ""
-    if request.method == "POST" : 
-        fullname = request.form["fullname"]
-        email = request.form["email"]
+    newpassword = ""
+    newemail = ""
 
-        # SQL insert
-        conn = mysql.connect()
-        cursor = conn.cursor(pymysql.cursors.DictCursor)
-        cursor.execute(
-            "INSERT INTO users VALUES (NULL, %s, %s)",
-                (fullname, email),
-        )
-        conn.commit()
-        msg = "Successfully inserted into users table"
-    else:
-        fullname = "Sang"    
+    if request.method == "POST": 
+        # Retrieve the form data
+        newpassword = request.form.get("newpassword")
+        newemail = request.form.get("newemail")
+        user_id = request.form.get("user_id")  # Assuming user_id is provided (e.g., via session or form)
 
-    return render_template("newsletter.html", fullname=fullname, msg= msg)
+        if not user_id:
+            msg = "User ID is required to update settings."
+        else:
+            try:
+                # Update the user record in the database
+                conn = mysql.connect()
+                cursor = conn.cursor(pymysql.cursors.DictCursor)
+                
+                cursor.execute(
+                    "UPDATE users SET password = %s, email = %s WHERE id = %s",
+                    (newpassword, newemail, user_id),
+                )
+                conn.commit()
+
+                if cursor.rowcount > 0:
+                    msg = "Successfully updated your settings."
+                else:
+                    msg = "No record updated. Check the user ID."
+
+            except Exception as e:
+                msg = f"An error occurred: {str(e)}"
+            finally:
+                cursor.close()
+                conn.close()
+    return render_template("newsletter.html", email=newemail,password = newpassword, msg= msg)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0",port = 8080)
-    
